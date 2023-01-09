@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js"></script>
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="style/bootstrap.min.css" rel="stylesheet">
+    <link href="../style/cover.css" rel="stylesheet">
+
+    
+</head>
+
+<body>
+    <script src="https://cdnjs.loli.net/ajax/libs/exceljs/3.8.2/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.min.js" integrity="sha512-Bkf3qaV86NxX+7MyZnLPWNt0ZI7/OloMlRo8z8KPIEUXssbVwB1E0bWVeCvYHjnSPwh4uuqDryUnRdcUw6FoTg==" crossorigin="anonymous"></script></head>
+    <div class="cover-container d-flex h-800 p-3 mx-auto flex-column">
+        
+  
+        <main role="main" class="inner cover">
+          <br/>
+          <h2>About:</h2>
+          <br/>
+          <h3>Purpose:</h3>
+          <p>
+            This tool is aimed at providing a quick and easy solution to transform Excel scorecard into consumable CSV files. 
+          </p>
+          <h3>Scope:</h3>
+          <p>
+            The tool is built with several constraints: 
+            <li>It should be OS agnostic (work on Mac as well as Windows)</li>
+            <li>It should not be package dependent (the end-user should not have to download any library)</li>
+            <li>It should be easy to use and not hosted on a server</li>
+          </p>
+          <h3>Tech stack</h3>
+          <p>The tech stack consists of a client JavaScript web page using CDN libraries such as ExcelJS.</p>
+          <h3>Output</h3>
+          <p>The script ingests multiple Excel files and transform them into Text files in a CSV format.</p>
+          <p>Each tab of a CSV file will output one file. For example, if you load 60 Excel files with 5 similar tabs, it will output 5 files corresponding
+            to your tabs with the merged files. E.g. 60 excel files with tabs "safety", "people centered" will deliver 2 text files with the merged data.
+          </p>
+          <h2>How to use it</h3>
+          <ol>
+            <li>Download the tool on your local machine.</li>
+            <li>Go into the folder "MEL_RI" and open "index.html" in your browser - ideally Google Chrome</li>
+            <li>Click on "choose files" and select your Excel files.</li>
+            <li>Clik on "allow multiple downloads"</li>
+            <li>The file will then be downloaded in your browser.</li>
+
+          </ol>
+          <h2>IMPORTANT: constraints</h2>
+          <p>Due to the nature of the Excel files - several constraints in terms of format must be respected</p>
+          <ol>
+            <li>Name of the excel file: the excel files must follow the strict format "2022 Q4 Health scorecard_COUNTRYNAME_PROJECTCODE.xlsx"</li>
+            <li>Structure of the excel file: the structure of the excel file must follow the templated one. </li>
+
+          </ol>
+         
+
+        </main>
+  
+       
+      </div>
+  
+    
+</body>
+
+</html>

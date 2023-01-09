@@ -39,7 +39,9 @@
   
         <footer class="mastfoot mt-auto">
           <div class="inner">
-            <p>Code available here: <a href="https://github.com/kenjinezumi/mel_ri">Github</a> </p>
+            <p>Tutorial and About: <a href="./pages/about.html">About</a> </p>
+            <p>Code repo: <a href="https://github.com/kenjinezumi/mel_ri">Github</a> </p>
+
           </div>
         </footer>
       </div>
@@ -47,7 +49,16 @@
     
 
     <script>
-var workbook = new ExcelJS.Workbook();
+let workbook = new ExcelJS.Workbook();
+
+const isRichValue = (value) => {
+  return Boolean(value && Array.isArray(value.richText));
+}
+
+const richToString = (rich) => {
+  return rich.richText.map(({ text }) => text).join('');
+}
+
 const downloadToFile = (content, filename, contentType) => {
     const a = document.createElement('a');
     const file = new Blob([content], {
@@ -60,177 +71,189 @@ const downloadToFile = (content, filename, contentType) => {
 
     URL.revokeObjectURL(a.href);
 };
+
 var resBenchmarkScoreCard = "";
 var resEffectiveIntegrated = "";
 var resSafe = "";
 var resPeopleCentered = "";
 var resEfficient = "";
 
-function upload(input) {
-    var results = [];
-    var files = input.files;
-    for(i=0; i < files.length; i++){
+const transformData = async (input) => {
 
-
-    var reader = new FileReader();
-
-    reader.onload = async function() {
-  
-        var i = 0;
-        var arrNames = [];
-        var wb = await workbook.xlsx.load(this.result);
-        for (j = 0; j != wb.worksheets.length; j++) {
-            if (!wb.worksheets[j].name.toLowerCase().includes('drop down')) {
-                arrNames.push(wb.worksheets[j].name);
-            }
-
-        }
-        for (let k = 0; k < arrNames.length; k++) {
-            var ws = (await wb).getWorksheet(arrNames[k]);
-            const rows = ws.getColumn(1);
-            const rowsCount = rows['_worksheet']['_rows'].length;
-            const colsCount = rows['_worksheet']['_columns'].length;
-            var rowStart = 1;
-            var colStart = 1;
-            var exclusionList = [];
-            if (arrNames[k].toLowerCase().includes("score card")) {
-                rowStart = 4;
-                colStart = 3;
-                exclusionList = [4, 5, 6];
-                if (i > 0) {
-                    exclusionList = [1, 4, 5, 6];
-                }
-                i += 0;
-            } else if (arrNames[k].toLowerCase().includes("effective & integrated")) {
-                rowStart = 2;
-                colStart = 1;
-                exclusionList = [3, 11, 26, 39, 40, 41, 42, 43, 44];
-                if (i > 0) {
-                    exclusionList = [1, 3, 11, 26, 39, 40, 41, 42, 43, 44];
-                }
-                i += 0;
-
-            } else if (arrNames[k].toLowerCase().includes("safe")) {
-                rowStart = 2;
-                colStart = 1;
-                exclusionList = [3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45];
-                if (i > 0) {
-                    exclusionList = [2, 3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45];
-                }
-                i += 0;
-
-
-            } else if (arrNames[k].toLowerCase().includes("peoplecentred")) {
-                rowStart = 3;
-                colStart = 1;
-                exclusionList = [4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
-                if (i > 0) {
-                    exclusionList = [1, 4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
-                }
-                i += 0;
-
-
-            } else if (arrNames[k].toLowerCase().includes("timely")) {
-                rowStart = 2;
-                colStart = 1;
-                exclusionList = [15, , 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45]
-                if (i > 0) {
-                    exclusionList = [1, 15, , 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45]
-
+    let results = [];
+    let files = input.files;
+    for (var i = 0; i < files.length; i++) {
+        const getData = async () => {
+            return new Promise(
+                (resolve) =>{
+            let reader = new FileReader();
+            reader.onload = async function() {
+                let arrNames = [];
+                let countryName = files[i].name.split("_")[1];
+                let projectCode = files[i].name.split("_")[2].split(".")[0];
+                let date = files[i].name.split("_")[0].split(" ")[0] + " " + files[i].name.split("_")[0].split(" ")[1];
+                let wb = await workbook.xlsx.load(this.result);
+                for (j = 0; j != wb.worksheets.length; j++) {
+                    if (!wb.worksheets[j].name.toLowerCase().includes('drop down')) {
+                        arrNames.push(wb.worksheets[j].name);
+                    }
 
                 }
-                i += 0;
+                for (let k = 0; k < arrNames.length; k++) {
+                    let ws = (await wb).getWorksheet(arrNames[k]);
+                    const rows = ws.getColumn(1);
+                    const rowsCount = rows['_worksheet']['_rows'].length;
+                    const colsCount = rows['_worksheet']['_columns'].length;
+                    let rowStart = 1;
+                    let colStart = 1;
+                    var exclusionList = [];
+                    if (arrNames[k].toLowerCase().includes("score card")) {
+                        // rowStart = 4;
+                        // colStart = 3;
+                        // exclusionList = [4, 5, 6];
+                        // if (i > 0) {
+                        //     exclusionList = [1, 4, 5, 6];
+                        // }
+                        // i += 0;
+                        console.log("We skip as we don't want the score card");
+                    } else if (arrNames[k].toLowerCase().includes("effective & integrated")) {
 
-            }
-            var res = "";
-            resRow = 0;
-            for (x = rowStart; x <= rowsCount; x++) {
-                if (exclusionList.includes(x)) {
-                    var temp = "";
-                } else {
-                    //Nested loop to fetch the data;
-                    //Cumbersome but this bit will be worksheets specific; 
-                    //This bit is EXCEL specific hence why it should not be modified; 
-                    var temp = "";
-                    for (y = colStart; y <= colsCount; y++) {
-                        var ko = ws.getRow(x);
-                        var l = ko.getCell(y);
-                        if (l.value != undefined) {
-                            if (l.value['formula'] != undefined) {
-                                if (l.result == "[object Object]") {
-                                    temp = temp.concat('0' + ";");
+                        rowStart = 2;
+                        colStart = 1;
+                        exclusionList = [3, 11, 26, 39, 40, 41, 42, 43, 44];
+                        if (i > 0) {
+                            exclusionList = [2, 3, 11, 26, 39, 40, 41, 42, 43, 44];
+                        }
+                        i += 0;
 
-                                } else {
-                                    temp = temp.concat(l.result + ";");
+                    } else if (arrNames[k].toLowerCase().includes("safe")) {
+                        rowStart = 2;
+                        colStart = 1;
+                        exclusionList = [3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45,46,47,48,49,50,51,52,53];
+                        if (i > 0) {
+                            exclusionList = [2, 3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45,46,47,48,49,50,51,52,53];
+                        }
+                        i += 0;
+
+
+                    } else if (arrNames[k].toLowerCase().includes("peoplecentred")) {
+                        rowStart = 3;
+                        colStart = 1;
+                        exclusionList = [1,2,4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
+                        if (i > 0) {
+                            exclusionList = [1,2,3, 4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
+                        }
+                        i += 0;
+
+
+                    } else if (arrNames[k].toLowerCase().includes("timely")) {
+                        rowStart = 2;
+                        colStart = 1;
+                        exclusionList = [15, 22,23, 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45]
+                        if (i > 0) {
+                            exclusionList = [2, 3,15,22,23, 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45]
+
+
+                        }
+                        i += 0;
+
+                    }
+                    let res = "";
+                    var esRow = 0;
+                    var temp;
+                    for (x = rowStart; x <= rowsCount; x++) {
+                        if (exclusionList.includes(x)) {
+                            temp = "";
+                        } else {
+                            //Nested loop to fetch the data;
+                            //Cumbersome but this bit will be worksheets specific; 
+                            //This bit is EXCEL specific hence why it should not be modified; 
+                            var temp = "";
+                            for (y = colStart; y <= colsCount; y++) {
+                                var ko = ws.getRow(x);
+                                let l = ko.getCell(y);
+                                if(isRichValue(l.value)){
+                                    l.value = richToString(l.value);
                                 }
+                                if (l.value != undefined) {
+                                    if (l.value['formula'] != undefined) {
+                                        if (l.result == "[object Object]") {
+                                            temp = temp.concat('0' + ";");
 
+                                        } else {
+                                            temp = temp.concat(l.result + ";");
+                                        }
+
+                                    } else {
+                                        // console.log(l.value);
+                                        temp = temp.concat(l.value + ";");
+                                    }
+                                }
+                            }
+
+                            if (x == rowStart) {
+                                temp = temp.concat("country;");
+                                temp = temp.concat("project_code;");
+                                temp = temp.concat("date");
                             } else {
-                                // console.log(l.value);
-                                temp = temp.concat(l.value + ";");
+                                temp = temp.concat(countryName + ";");
+                                temp = temp.concat(projectCode + ";");
+                                temp = temp.concat(date + ";");
+
+
+                            }
+                            temp = temp.concat("\n");
+                            if (arrNames[k].toLowerCase().includes("peoplecentred")) {
+                                resPeopleCentered = resPeopleCentered.concat(temp);
+                            } 
+                            //else if (arrNames[k].toLowerCase().includes("score card")) {
+                            //     resBenchmarkScoreCard = resBenchmarkScoreCard.concat(temp);
+                            // } 
+                            else if (arrNames[k].toLowerCase().includes("effective & integrated")) {
+                                console.log("Spotted!");
+                                resEffectiveIntegrated = resEffectiveIntegrated + temp;
+                            } else if (arrNames[k].toLowerCase().includes("timely")) {
+                                resEfficient = resEfficient.concat(temp);
+                            } else if (arrNames[k].toLowerCase().includes("safe")) {
+                                resSafe = resSafe.concat(temp);
+
                             }
                         }
-                    }
-                    var countryNameRow = (await wb).getWorksheet(arrNames[0]).getRow(1)
-                    var countryName = countryNameRow.getCell(4);
-                    if (countryName == undefined) {
-                        countryName = "undefined"
-                    }
-                    if (x == rowStart) {
-                        temp = temp.concat("country;")
-                    } else {
-                        temp = temp.concat(countryName + ";")
 
 
                     }
-                    temp = temp.concat("\n");
-                    if(arrNames[k].toLowerCase().includes("peoplecentred")){
-                        resPeopleCentered = resPeopleCentered.concat(temp);
-                    }else if(arrNames[k].toLowerCase().includes("score card")){
-                        resBenchmarkScoreCard = resBenchmarkScoreCard.concat(temp);
-                    }else if(arrNames[k].toLowerCase().includes("effective & integrated")){
-                        resEffectiveIntegrated = resEffectiveIntegrated.concat(temp);
-                    }else if(arrNames[k].toLowerCase().includes("timely")){
-                        resEfficient = resEfficient.concat(temp);
-                    }else if(arrNames[k].toLowerCase().includes("safe")){
-                       resSafe = resSafe.concat(temp);
 
-                    }
+
+
+
                 }
-
+                resolve();
 
             }
-          
-           
+            reader.readAsArrayBuffer(files.item(i));
 
+        });}
+
+        await getData();
+
+    }
+
+}
+
+const upload = async (input) => {
+    console.log("Start of the upload")
+    await transformData(input).then((data) => {
+            downloadToFile(resEffectiveIntegrated, 'effective_and_integrated.txt', 'text/plain');
+            downloadToFile(resPeopleCentered, 'people_centered_and_equitable.txt', 'text/plain');
+            downloadToFile(resEfficient, 'timely_and_efficient.txt', 'text/plain');
+            downloadToFile(resSafe, 'safe.txt', 'text/plain');
 
 
         }
-    downloadToFile(resBenchmarkScoreCard, 'benchmark_score_card.txt', 'text/plain');
-    downloadToFile(resPeopleCentered, 'people_centered.txt', 'text/plain');
-    downloadToFile(resEffectiveIntegrated, 'effective_integrated.txt', 'text/plain');
-    downloadToFile(resEfficient, 'efficient.txt', 'text/plain');
-    downloadToFile(resSafe, 'safe.txt', 'text/plain');
 
-
-
-
-        // var ws = (await wb).getWorksheet();
-        // console.log(ws);
-
-
-        //End of reader.onload
-
-    }
-
-    reader.readAsArrayBuffer(files.item(i));
-    }
-
-    // = downloadToFile(resBenchmarkScoreCard, 'my-new-file.txt', 'text/plain');
-
-
-
-
+    )
 }
+
 
     </script>
 </body>
