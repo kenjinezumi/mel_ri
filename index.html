@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>ML RI</title>
     <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js"></script>
     <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
 
@@ -49,14 +49,16 @@
     
 
     <script>
-let workbook = new ExcelJS.Workbook();
+ let workbook = new ExcelJS.Workbook();
 
 const isRichValue = (value) => {
-  return Boolean(value && Array.isArray(value.richText));
+    return Boolean(value && Array.isArray(value.richText));
 }
 
 const richToString = (rich) => {
-  return rich.richText.map(({ text }) => text).join('');
+    return rich.richText.map(({
+        text
+    }) => text).join('');
 }
 
 const downloadToFile = (content, filename, contentType) => {
@@ -72,11 +74,19 @@ const downloadToFile = (content, filename, contentType) => {
     URL.revokeObjectURL(a.href);
 };
 
-var resBenchmarkScoreCard = "";
-var resEffectiveIntegrated = "";
-var resSafe = "";
-var resPeopleCentered = "";
-var resEfficient = "";
+
+var resultAll = "";
+resultAll = resultAll.concat("Dimension;");
+resultAll = resultAll.concat("Sub dimension;");
+resultAll = resultAll.concat("Question number;");
+resultAll = resultAll.concat("Question;");
+resultAll = resultAll.concat("Comment;");
+resultAll = resultAll.concat("Response;");
+resultAll = resultAll.concat("Country;");
+resultAll = resultAll.concat("Project code;");
+resultAll = resultAll.concat("Quarter;");
+resultAll = resultAll.concat("Year;");
+resultAll = resultAll.concat("\n");
 
 const transformData = async (input) => {
 
@@ -85,154 +95,286 @@ const transformData = async (input) => {
     for (var i = 0; i < files.length; i++) {
         const getData = async () => {
             return new Promise(
-                (resolve) =>{
-            let reader = new FileReader();
-            reader.onload = async function() {
-                let arrNames = [];
-                let countryName = files[i].name.split("_")[1];
-                let projectCode = files[i].name.split("_")[2].split(".")[0];
-                let date = files[i].name.split("_")[0].split(" ")[0] + " " + files[i].name.split("_")[0].split(" ")[1];
-                let wb = await workbook.xlsx.load(this.result);
-                for (j = 0; j != wb.worksheets.length; j++) {
-                    if (!wb.worksheets[j].name.toLowerCase().includes('drop down')) {
-                        arrNames.push(wb.worksheets[j].name);
-                    }
-
-                }
-                for (let k = 0; k < arrNames.length; k++) {
-                    let ws = (await wb).getWorksheet(arrNames[k]);
-                    const rows = ws.getColumn(1);
-                    const rowsCount = rows['_worksheet']['_rows'].length;
-                    const colsCount = rows['_worksheet']['_columns'].length;
-                    let rowStart = 1;
-                    let colStart = 1;
-                    var exclusionList = [];
-                    if (arrNames[k].toLowerCase().includes("score card")) {
-                        // rowStart = 4;
-                        // colStart = 3;
-                        // exclusionList = [4, 5, 6];
-                        // if (i > 0) {
-                        //     exclusionList = [1, 4, 5, 6];
-                        // }
-                        // i += 0;
-                        console.log("We skip as we don't want the score card");
-                    } else if (arrNames[k].toLowerCase().includes("effective & integrated")) {
-
-                        rowStart = 2;
-                        colStart = 1;
-                        exclusionList = [3, 11, 26, 39, 40, 41, 42, 43, 44];
-                        if (i > 0) {
-                            exclusionList = [2, 3, 11, 26, 39, 40, 41, 42, 43, 44];
-                        }
-                        i += 0;
-
-                    } else if (arrNames[k].toLowerCase().includes("safe")) {
-                        rowStart = 2;
-                        colStart = 1;
-                        exclusionList = [3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45,46,47,48,49,50,51,52,53];
-                        if (i > 0) {
-                            exclusionList = [2, 3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45,46,47,48,49,50,51,52,53];
-                        }
-                        i += 0;
-
-
-                    } else if (arrNames[k].toLowerCase().includes("peoplecentred")) {
-                        rowStart = 3;
-                        colStart = 1;
-                        exclusionList = [1,2,4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
-                        if (i > 0) {
-                            exclusionList = [1,2,3, 4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
-                        }
-                        i += 0;
-
-
-                    } else if (arrNames[k].toLowerCase().includes("timely")) {
-                        rowStart = 2;
-                        colStart = 1;
-                        exclusionList = [15, 22,23, 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45]
-                        if (i > 0) {
-                            exclusionList = [2, 3,15,22,23, 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45]
-
+                (resolve) => {
+                    let reader = new FileReader();
+                    reader.onload = async function() {
+                        let arrNames = [];
+                        let countryName = files[i].name.split("_")[1];
+                        let projectCode = files[i].name.split("_")[2].split(".")[0];
+                        let wb = await workbook.xlsx.load(this.result);
+                        let comment; 
+                        let question;
+                        for (j = 0; j != wb.worksheets.length; j++) {
+                            if (!wb.worksheets[j].name.toLowerCase().includes('drop down')
+                            && !wb.worksheets[j].name.toLowerCase().includes('score card')) {
+                                arrNames.push(wb.worksheets[j].name);
+                            }else{
+                                console.log("We exclude: " + wb.worksheets[j].name)
+                            }
 
                         }
-                        i += 0;
+                        console.log("The list of worksheets is: " + arrNames);
+                        
+                        for (let k = 0; k < arrNames.length; k++) {
+                                let ws = (await wb).getWorksheet(arrNames[k]);
+                                const rows = ws.getColumn(1);
+                                var rowsCount = rows['_worksheet']['_rows'].length;
+                                var colsCount = rows['_worksheet']['_columns'].length;
+                                let rowStart = 1;
+                                let colStart = 1;
+                                var dimension;
+                                var exclusionList = [];
+                                let header;
 
-                    }
-                    let res = "";
-                    var esRow = 0;
-                    var temp;
-                    for (x = rowStart; x <= rowsCount; x++) {
-                        if (exclusionList.includes(x)) {
-                            temp = "";
-                        } else {
-                            //Nested loop to fetch the data;
-                            //Cumbersome but this bit will be worksheets specific; 
-                            //This bit is EXCEL specific hence why it should not be modified; 
-                            var temp = "";
-                            for (y = colStart; y <= colsCount; y++) {
-                                var ko = ws.getRow(x);
-                                let l = ko.getCell(y);
-                                if(isRichValue(l.value)){
-                                    l.value = richToString(l.value);
+                                if (arrNames[k].toLowerCase().includes("effective")) {
+                                    header = 2;
+                                    dimension = "Effective & Integrated";
+                                    rowStart = 3;
+                                    colStart = 1;
+                                    exclusionList = [1, 2, 3, 10,11, 26, 39, 40, 41, 42, 43, 44];
+
+                                } else if (arrNames[k].toLowerCase().includes("safe")) {
+
+                                    header = 2;
+                                    dimension = "Safe";
+                                    rowStart = 2;
+                                    colStart = 1;
+                                    exclusionList = [2,3, 8, 25, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53];
+
+                                } else if (arrNames[k].toLowerCase().includes("peoplecentred")) {
+
+                                    header = 3;
+                                    dimension = "People-Centered & Equitable";
+                                    rowStart = 3;
+                                    colStart = 1;
+                                    exclusionList = [1, 2, 3, 4, 15, 26, 39, 40, 41, 42, 43, 44, 45]
+
+                                } else if (arrNames[k].toLowerCase().includes("timely")) {
+                                    header = 2;
+                                    dimension = "Timely & Efficient";
+                                    rowStart = 2;
+                                    colStart = 1;
+                                    exclusionList = [1,2,3,11, 22, 23, 24, 25, 26, 27, 39, 40, 41, 42, 43, 44, 45];
                                 }
-                                if (l.value != undefined) {
-                                    if (l.value['formula'] != undefined) {
-                                        if (l.result == "[object Object]") {
-                                            temp = temp.concat('0' + ";");
+                                let res = "";
+                                var esRow = 0;
+                                for (x = rowStart; x <= rowsCount; x++) {
+                                    if (!exclusionList.includes(x)) {
+                                        
+                                        for (y = colStart; y < colsCount; y++) {
+                                            let temp = "";
+                                            let topRow = ws.getRow(header);
+                                            let checkHeader = topRow.getCell(y);
+                                           
 
-                                        } else {
-                                            temp = temp.concat(l.result + ";");
+                                            if (checkHeader.value != null && (checkHeader.value.split(" ")[0].includes("Q1") ||
+                                                checkHeader.value.split(" ")[0].includes("Q2") ||
+                                                checkHeader.value.split(" ")[0].includes("Q3") ||
+                                                checkHeader.value.split(" ")[0].includes("Q4"))) {
+
+
+                                                if (dimension == "Effective & Integrated") {
+                                                    let row = ws.getRow(x);
+                                                    let cellQuestionNumber = row.getCell(1);
+
+                                                    //Dimension
+                                                    temp = temp.concat(dimension + ";");
+                                                    //Sub dimension
+                                                    if (x > 3 && x < 10) {
+                                                        temp = temp.concat("Staff have the technical skills for their work;");
+                                                    } else if (x > 11 && x < 26) {
+                                                        temp = temp.concat("Staff have the tools and workplace for effective work;");
+
+                                                    } else if (x > 26 && x < 39) {
+                                                        temp = temp.concat("Management processes support effectiveness;");
+
+                                                    }
+                                                    //Question number
+                                                    temp = temp.concat(cellQuestionNumber.value + ";");
+                                                    //Question
+                                                    if (isRichValue(row.getCell(2))){
+                                                        question = richToString(row.getCell(2));
+                                                    }else{
+                                                        question = row.getCell(2);
+                                                    }
+                                                    temp = temp.concat(String(question).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");
+                                                    //Comment
+                                                    if (isRichValue(row.getCell(7))){
+                                                        comment = richToString(row.getCell(7));
+                                                    }else{
+                                                        comment = row.getCell(7);
+                                                    }
+                                                    temp = temp.concat(String(comment).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");
+                                                    //Response
+                                                    temp = temp.concat(row.getCell(y) + ";");
+                                                    //Country
+                                                    temp = temp.concat(countryName + ";");
+                                                    //Project code
+                                                    temp = temp.concat(projectCode + ";");
+                                                    //Quarter
+                                                    temp = temp.concat(checkHeader.value.split(" ")[0] + ";");
+                                                    //Year
+                                                    temp = temp.concat(checkHeader.value.split(" ")[1] +";");
+                                                    temp = temp.concat("\n");
+                                                    resultAll = resultAll + temp;
+
+
+
+                                                } else if (dimension == "Safe") {
+                                                    let row = ws.getRow(x);
+                                                    let cellQuestionNumber = row.getCell(1);
+                                                    //Dimension
+                                                    temp = temp.concat(dimension + ";");
+                                                    //Sub dimension
+                                                    if (x > 3 && x < 8) {
+                                                        temp = temp.concat("Staff have the technical skills for their work;");
+                                                    } else if (x > 8 && x < 25) {
+                                                        temp = temp.concat("Staff have the tools and workplace for safe care;");
+
+                                                    } else if (x > 25 && x < 37) {
+                                                        temp = temp.concat("Management processes support safe care;");
+
+                                                    }
+                                                    //Question number
+                                                    temp = temp.concat(cellQuestionNumber.value + ";");
+                                                    //Question
+                                                    if (isRichValue(row.getCell(2))){
+                                                        question = richToString(row.getCell(2));
+                                                    }else{
+                                                        question = row.getCell(2);
+                                                    }
+                                                    temp = temp.concat(String(question).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");                                                    //Comment
+                                                    if (isRichValue(row.getCell(7))){
+                                                        comment = richToString(row.getCell(7));
+                                                    }else{
+                                                        comment = row.getCell(7);
+                                                    }
+                                                    temp = temp.concat(String(comment).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");
+                                                    //Response
+                                                    temp = temp.concat(row.getCell(y) + ";");
+                                                    //Country
+                                                    temp = temp.concat(countryName + ";");
+                                                    //Project code
+                                                    temp = temp.concat(projectCode + ";");
+                                                    //Quarter
+                                                    temp = temp.concat(checkHeader.value.split(" ")[0]+";");
+                                                    //Year
+                                                    temp = temp.concat(checkHeader.value.split(" ")[1]+";");
+                                                    temp = temp.concat("\n");
+                                                    resultAll = resultAll + temp;
+
+
+                                                } else if (dimension == "People-Centered & Equitable") {
+                                                    let row = ws.getRow(x);
+                                                    let cellQuestionNumber = row.getCell(1);
+                                                    //Dimension
+                                                    temp = temp.concat(dimension + ";");
+                                                    //Sub dimension
+                                                    if (x > 4 && x < 15) {
+                                                        temp = temp.concat("Staff have the technical skills for their work;");
+                                                    } else if (x > 15 && x < 26) {
+                                                        temp = temp.concat("Staff have the tools and workplace for people centered care;");
+
+                                                    } else if (x > 26 && x < 39) {
+                                                        temp = temp.concat("Management processes support people centred care;");
+
+                                                    }
+                                                    //Question number
+                                                    temp = temp.concat(cellQuestionNumber.value + ";");
+                                                    //Question
+                                                    if (isRichValue(row.getCell(2))){
+                                                        question = richToString(row.getCell(2));
+                                                    }else{
+                                                        question = row.getCell(2);
+                                                    }
+                                                    temp = temp.concat(String(question).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");                                                    //Comment
+                                                    if (isRichValue(row.getCell(7))){
+                                                        comment = richToString(row.getCell(7));
+                                                    }else{
+                                                        comment = row.getCell(7);
+                                                    }
+                                                    temp = temp.concat(String(comment).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");
+                                                    //Response
+                                                    temp = temp.concat(row.getCell(y) + ";");
+                                                    //Country
+                                                    temp = temp.concat(countryName + ";");
+                                                    //Project code
+                                                    temp = temp.concat(projectCode + ";");
+                                                    //Quarter
+                                                    temp = temp.concat(checkHeader.value.split(" ")[0] + ";");
+                                                    //Year
+                                                    temp = temp.concat(checkHeader.value.split(" ")[1] + ";");
+                                                    temp = temp.concat("\n");
+                                                    resultAll = resultAll + temp;
+
+
+                                                } else if (dimension == "Timely & Efficient") {
+                                                    let row = ws.getRow(x);
+                                                    let cellQuestionNumber = row.getCell(1);
+                                                    //Dimension
+                                                    temp = temp.concat(dimension + ";");
+                                                    //Sub dimension
+                                                    if (x > 3 && x < 11) {
+                                                        temp = temp.concat("Staff have the tools and workplace for timely and efficient care;");
+                                                    } else if (x > 11 && x < 22) {
+                                                        temp = temp.concat("Management processes support timely and efficient care;");
+
+                                                    }
+                                                    //Question number
+                                                    temp = temp.concat(cellQuestionNumber.value + ";");
+                                                    //Question
+                                                    if (isRichValue(row.getCell(2))){
+                                                        question = richToString(row.getCell(2));
+                                                    }else{
+                                                        question = row.getCell(2);
+                                                    }
+                                                    temp = temp.concat(String(question).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");                                                    //Comment
+                                                    if (isRichValue(row.getCell(7))){
+                                                        comment = richToString(row.getCell(7));
+                                                    }else{
+                                                        comment = row.getCell(7);
+                                                    }
+                                                    temp = temp.concat(String(comment).replace(";", ",").replace(/(\r\n|\n|\r)/gm, "") + ";");                                                    //Response
+                                                    temp = temp.concat(row.getCell(y) + ";");
+                                                    //Country
+                                                    temp = temp.concat(countryName + ";");
+                                                    //Project code
+                                                    temp = temp.concat(projectCode + ";");
+                                                    //Quarter
+                                                    temp = temp.concat(checkHeader.value.split(" ")[0] + ";");
+                                                    //Year
+                                                    temp = temp.concat(checkHeader.value.split(" ")[1] + ";");
+                                                    temp = temp.concat("\n");
+                                                    resultAll = resultAll + temp;
+
+
+                                                }
+
+
+
+
+                                            }
+
+
                                         }
-
-                                    } else {
-                                        // console.log(l.value);
-                                        temp = temp.concat(l.value + ";");
+ 
                                     }
                                 }
-                            }
-
-                            if (x == rowStart) {
-                                temp = temp.concat("country;");
-                                temp = temp.concat("project_code;");
-                                temp = temp.concat("date");
-                            } else {
-                                temp = temp.concat(countryName + ";");
-                                temp = temp.concat(projectCode + ";");
-                                temp = temp.concat(date + ";");
 
 
-                            }
-                            temp = temp.concat("\n");
-                            if (arrNames[k].toLowerCase().includes("peoplecentred")) {
-                                resPeopleCentered = resPeopleCentered.concat(temp);
-                            } 
-                            //else if (arrNames[k].toLowerCase().includes("score card")) {
-                            //     resBenchmarkScoreCard = resBenchmarkScoreCard.concat(temp);
-                            // } 
-                            else if (arrNames[k].toLowerCase().includes("effective & integrated")) {
-                                console.log("Spotted!");
-                                resEffectiveIntegrated = resEffectiveIntegrated + temp;
-                            } else if (arrNames[k].toLowerCase().includes("timely")) {
-                                resEfficient = resEfficient.concat(temp);
-                            } else if (arrNames[k].toLowerCase().includes("safe")) {
-                                resSafe = resSafe.concat(temp);
+                            
 
-                            }
+
+
+
                         }
-
+                        resolve();
 
                     }
+                    reader.readAsArrayBuffer(files.item(i));
 
-
-
-
-                }
-                resolve();
-
-            }
-            reader.readAsArrayBuffer(files.item(i));
-
-        });}
+                });
+        }
 
         await getData();
 
@@ -243,10 +385,7 @@ const transformData = async (input) => {
 const upload = async (input) => {
     console.log("Start of the upload")
     await transformData(input).then((data) => {
-            downloadToFile(resEffectiveIntegrated, 'effective_and_integrated.txt', 'text/plain');
-            downloadToFile(resPeopleCentered, 'people_centered_and_equitable.txt', 'text/plain');
-            downloadToFile(resEfficient, 'timely_and_efficient.txt', 'text/plain');
-            downloadToFile(resSafe, 'safe.txt', 'text/plain');
+            downloadToFile(resultAll.replace("null", ""), 'results_all.txt', 'text/plain');
 
 
         }
