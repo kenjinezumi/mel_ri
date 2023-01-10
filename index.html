@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>ML RI</title>
     <script type="text/javascript" src="https://cdnjs.loli.net/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js"></script>
     <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
 
@@ -87,7 +87,6 @@ resultAll = resultAll.concat("Project code;");
 resultAll = resultAll.concat("Quarter;");
 resultAll = resultAll.concat("Year;");
 resultAll = resultAll.concat("\n");
-console.log(resultAll);
 
 const transformData = async (input) => {
 
@@ -218,7 +217,6 @@ const transformData = async (input) => {
                                                     temp = temp.concat(checkHeader.value.split(" ")[1] +";");
                                                     temp = temp.concat("\n");
                                                     resultAll = resultAll + temp;
-                                                    console.log("For row " + x + " Andcolumn " + y + " the result is " + temp)
 
 
 
